@@ -1,6 +1,6 @@
 import haxe.unit.*;
 
-import minimatchx.BalancedMatch;
+import minimatchx.BraceExpansion;
 import minimatchx.Minimatch;
 
 class Test extends TestCase {
@@ -11,6 +11,7 @@ class Test extends TestCase {
 	static function main():Void {
 		var runner = new TestRunner();
 		runner.add(new TestBalancedMatch());
+		runner.add(new TestBraceExpansion());
 		runner.add(new Test());
 		var success = runner.run();
 		if (!success) {
