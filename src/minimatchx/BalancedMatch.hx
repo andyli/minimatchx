@@ -7,23 +7,23 @@ class BalancedMatchResult {
 	/**
 		the index of the first match of `a`
 	*/
-	public var start:Null<Int>;
+	public var start:Int;
 	/**
 		the index of the matching `b`
 	*/
-	public var end:Null<Int>;
+	public var end:Int;
 	/**
 		the preamble, `a` and `b` not included
 	*/
-	public var pre:Null<String>;
+	public var pre:String;
 	/**
 		the match, `a` and `b` not included
 	*/
-	public var body:Null<String>;
+	public var body:String;
 	/**
 		the postscript, `a` and `b` not included
 	*/
-	public var post:Null<String>;
+	public var post:String;
 
 	function new():Void {}
 }
@@ -35,15 +35,18 @@ class BalancedMatchResult {
 class BalancedMatch {
 	static public function balanced(a:String, b:String, str:String):Null<BalancedMatchResult> {
 		var bal = 0;
-		var m = new BalancedMatchResult();
+		var m = null;
 		var ended = false;
 
 		for (i in 0...str.length) {
 			if (a == str.substr(i, a.length)) {
-				if (m.start == null) m.start = i;
+				if (m == null) {
+					m = new BalancedMatchResult();
+					m.start = i;
+				}
 				bal++;
 			}
-			else if (b == str.substr(i, b.length) && m.start != null) {
+			else if (b == str.substr(i, b.length) && m != null) {
 				ended = true;
 				bal--;
 				if (bal <= 0) {
@@ -62,7 +65,7 @@ class BalancedMatch {
 		if (bal > 0 && ended) {
 			var start = m.start + a.length;
 			m = balanced(a, b, str.substr(start));
-			if (m != null && m.start != null) {
+			if (m != null) {
 				m.start += start;
 				m.end += start;
 				m.pre = str.substring(0, start) + m.pre;

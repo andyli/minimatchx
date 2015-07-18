@@ -3,3 +3,10 @@
 -cp test
 -js bin/Test.js
 -cmd node bin/Test.js
+
+--next
+-main Test
+-cp src
+-cp test
+-cpp bin
+-cmd ./bin/Test
