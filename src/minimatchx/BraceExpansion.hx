@@ -8,15 +8,14 @@ using Lambda;
 	as known from sh/bash, in JavaScript.
 */
 class BraceExpansion {
-	static var escSlash = "$SLASH" + Math.random() + "$";
-	static var escOpen = "$OPEN" + Math.random() + "$";
-	static var escClose = "$CLOSE" + Math.random() + "$";
-	static var escComma = "$COMMA" + Math.random() + "$";
-	static var escPeriod = "$PERIOD" + Math.random() + "$";
+	static var escSlash = "%%SLASH" + Math.random() + "%%";
+	static var escOpen = "%%OPEN" + Math.random() + "%%";
+	static var escClose = "%%CLOSE" + Math.random() + "%%";
+	static var escComma = "%%COMMA" + Math.random() + "%%";
+	static var escPeriod = "%%PERIOD" + Math.random() + "%%";
 
 	static function numeric(str:String):Float {
-		var i = Std.parseFloat(str);
-		return !Math.isNaN(i) ? i : str.charCodeAt(0);
+		return ~/\d/.match(str) ? Std.parseFloat(str) : str.charCodeAt(0);
 	}
 
 	static function escapeBraces(str) {
@@ -63,11 +62,11 @@ class BraceExpansion {
 		return parts.concat(p);
 	}
 
-	static function expandTop(str:String):Array<String> {
+	static public function expand(str:String):Array<String> {
 		if (str == "")
 			return [];
 
-		return expand(escapeBraces(str), true).map(unescapeBraces);
+		return _expand(escapeBraces(str), true).map(unescapeBraces);
 	}
 
 	static function embrace(str:String):String
@@ -84,7 +83,7 @@ class BraceExpansion {
 
 
 
-	static public function expand(str:String, isTop:Bool = false):Array<String> {
+	static function _expand(str:String, isTop:Bool = false):Array<String> {
 		var expansions = [];
 
 		var m = balanced('{', '}', str);
@@ -98,7 +97,7 @@ class BraceExpansion {
 			// {a},b}
 			if (~/,.*}/.match(m.post)) {
 				str = m.pre + '{' + m.body + escClose + m.post;
-				return expand(str);
+				return _expand(str);
 			}
 			return [str];
 		}
@@ -110,10 +109,10 @@ class BraceExpansion {
 			n = parseCommaParts(m.body);
 			if (n.length == 1) {
 				// x{{a,b}}y ==> x{a}y x{b}y
-				n = expand(n[0], false).map(embrace);
+				n = _expand(n[0], false).map(embrace);
 				if (n.length == 1) {
 					var post = m.post.length > 0
-						? expand(m.post, false)
+						? _expand(m.post, false)
 						: [''];
 					return post.map(function(p) {
 						return m.pre + n[0] + p;
@@ -128,7 +127,7 @@ class BraceExpansion {
 		// no need to expand pre, since it is guaranteed to be free of brace-sets
 		var pre = m.pre;
 		var post = m.post.length > 0
-			? expand(m.post, false)
+			? _expand(m.post, false)
 			: [''];
 
 		var N;
@@ -136,7 +135,6 @@ class BraceExpansion {
 		if (isSequence) {
 			var x = numeric(n[0]);
 			var y = numeric(n[1]);
-			// trace('$x $y');
 			var width:Int = Std.int(Math.max(n[0].length, n[1].length));
 			var incr:Int = n.length == 3
 				? Std.int(Math.abs(numeric(n[2])))
@@ -176,7 +174,7 @@ class BraceExpansion {
 			}
 		} else {
 			N = n
-				.map(function(el) return expand(el, false))
+				.map(function(el) return _expand(el, false))
 				.fold(function(cur, acc:Array<String>) return acc.concat(cur), []);
 		}
 

@@ -151,11 +151,9 @@ class TestBraceExpansion extends TestCase {
 		cases.pop();
 
 		for (testcase in cases) {
-			trace(testcase);
 			var set = testcase.split('\n');
 			var pattern = set.shift();
 			var actual = expand(pattern);
-			trace(actual);
 
 			// If it expands to the empty string, then it's actually
 			// just nothing, but Bash is a singly typed language, so
