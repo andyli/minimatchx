@@ -84,10 +84,10 @@ class Minimatch {
 		}
 		var options = this.options;
 
-		var twoStar = options.noglobstar ? star
-			: options.dot ? twoStarDot
+		var twoStar = options.noglobstar == true ? star
+			: options.dot == true ? twoStarDot
 			: twoStarNoDot;
-		var flags = options.nocase ? 'i' : '';
+		var flags = options.nocase == true ? 'i' : '';
 
 		var re = set.map(function (pattern) {
 			return pattern.map(function (p) {
@@ -118,7 +118,7 @@ class Minimatch {
 	}
 
 	public function match(f:String, ?partial):Bool {
-		this.debug('$f, ${this.pattern}');
+		debug('$f, ${this.pattern}');
 		// short-circuit in the case of busted things.
 		// comments, etc.
 		if (this.comment) return false;
@@ -135,7 +135,7 @@ class Minimatch {
 
 		// treat the test path as a set of pathparts.
 		var f = slashSplit.split(f);
-		this.debug('${this.pattern} split $f');
+		debug('${this.pattern} split $f');
 
 		// just ONE of the pattern sets in this.set needs to match
 		// in order for it to be valid.  If negating, then just one
@@ -143,7 +143,7 @@ class Minimatch {
 		// Either way, return on the first hit.
 
 		var set = this.set;
-		this.debug('${this.pattern} set $set');
+		debug('${this.pattern} set $set');
 
 		// Find the basename of the path by looking for the last non-empty segment
 		var filename;
@@ -157,39 +157,42 @@ class Minimatch {
 		for (i in 0...set.length) {
 			var pattern = set[i];
 			var file = f;
-			if (options.matchBase && pattern.length == 1) {
+			if (options.matchBase == true && pattern.length == 1) {
 				file = [filename];
 			}
 			var hit = this.matchOne(file, pattern, partial);
 			if (hit) {
-				if (options.flipNegate) return true;
+				if (options.flipNegate == true) return true;
 				return !this.negate;
 			}
 		}
 
 		// didn't get any hits.  this is success if it's a negative
 		// pattern, failure otherwise.
-		if (options.flipNegate) return false;
+		if (options.flipNegate == true) return false;
 		return this.negate;
 	}
 
 	public function matchOne(file:Array<String>, pattern:Array<Part>, partial:Bool = false):Bool {
 		var options = this.options;
 
-		this.debug('this $this, file: $file, pattern: $pattern');
+		debug('this $this, file: $file, pattern: $pattern');
 
-		this.debug('${file.length}, ${pattern.length}');
+		debug('${file.length}, ${pattern.length}');
 
 		var fi = -1,
 			pi = -1,
 			fl = file.length,
 			pl = pattern.length;
-		while (++fi < fl && ++pi < pl) {
-			this.debug('matchOne loop');
+		while ({
+			++fi;++pi;
+			fi < fl && pi < pl;
+		}) {
+			debug('loop');
 			var p = pattern[pi];
 			var f = file[fi];
 
-			this.debug('$pattern, $p, $f');
+			debug('$pattern, $p, $f');
 
 			switch (p) {
 				case null:
@@ -222,7 +225,7 @@ class Minimatch {
 					var fr = fi;
 					var pr = pi + 1;
 					if (pr == pl) {
-						this.debug('** at the end');
+						debug('** at the end');
 						// a ** at the end will just swallow the rest.
 						// We have found a match.
 						// however, it will not swallow /.x, unless
@@ -231,7 +234,7 @@ class Minimatch {
 						// exponential reasons.
 						while (fi < fl) {
 							if (file[fi] == '.' || file[fi] == '..' ||
-								(!options.dot && file[fi].charAt(0) == '.')) return false;
+								(!(options.dot == true) && file[fi].charAt(0) == '.')) return false;
 							fi++;
 						}
 						return true;
@@ -241,24 +244,24 @@ class Minimatch {
 					while (fr < fl) {
 						var swallowee = file[fr];
 
-						this.debug('\nglobstar while $file, $fr, $pattern, $pr, $swallowee');
+						debug('\nglobstar while $file, $fr, $pattern, $pr, $swallowee');
 
 						// XXX remove this slice.  Just pass the start index.
 						if (this.matchOne(file.slice(fr), pattern.slice(pr), partial)) {
-							this.debug('globstar found match! $fr, $fl, $swallowee');
+							debug('globstar found match! $fr, $fl, $swallowee');
 							// found a match.
 							return true;
 						} else {
 							// can't swallow "." or ".." ever.
 							// can only swallow ".foo" when explicitly asked.
 							if (swallowee == '.' || swallowee == '..' ||
-								(!options.dot && swallowee.charAt(0) == '.')) {
-								this.debug('dot detected! $file, $fr, $pattern, $pr');
+								(!(options.dot == true) && swallowee.charAt(0) == '.')) {
+								debug('dot detected! $file, $fr, $pattern, $pr');
 								break;
 							}
 
 							// ** swallows a segment, and continue.
-							this.debug('globstar swallow a segment, and continue');
+							debug('globstar swallow a segment, and continue');
 							fr++;
 						}
 					}
@@ -268,7 +271,7 @@ class Minimatch {
 					// If there's more *pattern* left, then
 					if (partial) {
 						// ran out of file
-						this.debug('\n>>> no match, partial? $file, $fr, $pattern, $pr');
+						debug('\n>>> no match, partial? $file, $fr, $pattern, $pr');
 						if (fr == fl) return true;
 					}
 					return false;
@@ -277,21 +280,24 @@ class Minimatch {
 				// non-magic patterns just have to match exactly
 				// patterns with magic have been turned into regexps.
 				case Str(p):
-					var hit = if (options.nocase) {
+					var hit = if (options.nocase == true) {
 						f.toLowerCase() == p.toLowerCase();
 					} else {
 						f == p;
 					}
-					this.debug('string match $p, $f, $hit');
+					debug('string match $p, $f, $hit');
 					if (!hit) return false;
 				case Re(r, src):
 					var hit = r.match(f);
-					this.debug('pattern match $p, $f, $hit');
+					debug('pattern match $p, $f, $hit');
 					if (!hit) return false;
 				case _:
 					throw "error";
 			}
 		}
+
+		debug('here~~~~~~~~~~~');
+		debug('$fi, $fl, $pi, $pl');
 
 		// Note: ending in / means that we'll get a final ""
 		// at the end of the pattern.  This can only match a
@@ -381,8 +387,10 @@ class Minimatch {
 		return t;
 	}
 
-	dynamic function debug(msg:String):Void {
-
+	static macro function debug(msg) {
+		return macro @:pos(msg.pos)
+			if (options.debug == true)
+				trace($msg);
 	}
 
 	var _made:Bool = false;
@@ -396,7 +404,7 @@ class Minimatch {
 		var options = this.options;
 
 		// empty patterns and comments match nothing.
-		if (!options.nocomment && pattern.charAt(0) == '#') {
+		if (!(options.nocomment == true) && pattern.charAt(0) == '#') {
 			this.comment = true;
 			return;
 		}
@@ -411,9 +419,7 @@ class Minimatch {
 		// step 2: expand braces
 		var set = this.globSet = this.braceExpand();
 
-		if (options.debug) this.debug = function(msg) trace(msg);
-
-		this.debug(this.pattern + ", " + set);
+		debug(this.pattern + ", " + set);
 
 		// step 3: now we have a set, so turn each one into a series of path-portion
 		// matching patterns.
@@ -424,21 +430,21 @@ class Minimatch {
 			return slashSplit.split(s);
 		});
 
-		this.debug(this.pattern + ", " + set);
+		debug(this.pattern + ", " + set);
 
 		// glob --> regexps
 		var set = set.map(function (s) {
 			return s.map(function (s) return this.parse(s));
 		});
 
-		this.debug(this.pattern + ", " + set);
+		debug(this.pattern + ", " + set);
 
 		// filter out everything that didn't compile properly.
 		var set = set.filter(function(s):Bool {
 			return s.indexOf(null) == -1;
 		});
 
-		this.debug(this.pattern + ", " + set);
+		debug(this.pattern + ", " + set);
 
 		this.set = set;
 	}
@@ -449,7 +455,7 @@ class Minimatch {
 		var options = this.options;
 		var negateOffset = 0;
 
-		if (options.nonegate) return;
+		if (options.nonegate == true) return;
 
 		for (i in 0...pattern.length) {
 			if (pattern.charAt(i) != '!')
@@ -475,7 +481,7 @@ class Minimatch {
 			throw 'undefined pattern';
 		}
 
-		if (options.nobrace ||
+		if (options.nobrace == true ||
 			!~/\{.*\}/.match(pattern)) {
 			// shortcut. no need to expand.
 			return [pattern];
@@ -488,14 +494,19 @@ class Minimatch {
 		var options = this.options;
 
 		// shortcuts
-		if (!options.noglobstar && pattern == '**') return GLOBSTAR;
+		if (!(options.noglobstar == true) && pattern == '**') return GLOBSTAR;
 		if (pattern == '') return Str('');
 
 		var re = '';
 		var hasMagic = options.nocase == true;
 		var escaping = false;
 		// ? => one single character
-		var patternListStack:Array<Dynamic> = [];
+		var patternListStack:Array<{
+			type:String,
+			start:Int,
+			reStart:Int,
+			reEnd:Int,
+		}> = [];
 		var negativeLists:Array<Dynamic> = [];
 		var plType;
 		var stateChar:Null<String>;
@@ -506,7 +517,7 @@ class Minimatch {
 		// even when options.dot is set.
 		var patternStart = pattern.charAt(0) == '.' ? '' // anything
 		// not (start or / followed by . or .. followed by / or end)
-		: options.dot ? '(?!(?:^|\\/)\\.{1,2}(?:$|\\/))'
+		: options.dot == true ? '(?!(?:^|\\/)\\.{1,2}(?:$|\\/))'
 		: '(?!\\.)';
 		var self = this;
 
@@ -537,7 +548,8 @@ class Minimatch {
 			debug('$pattern\t$i $re $c');
 
 			// skip over any that are escaped.
-			if (escaping && reSpecials[c]) {
+			if (escaping && reSpecials.exists(c)) {
+				debug("there!!!");
 				re += '\\' + c;
 				escaping = false;
 				continue;
@@ -557,12 +569,12 @@ class Minimatch {
 				// the various stateChar values
 				// for the "extglob" stuff.
 				case '?', '*', '+', '@', '!':
-					this.debug('$pattern\t$i $re $c <-- stateChar');
+					debug('$pattern\t$i $re $c <-- stateChar');
 
 					// all of those are literals inside a class, except that
 					// the glob [!a] means [^a] in regexp
 					if (inClass) {
-						this.debug('  in class');
+						debug('  in class');
 						if (c == '!' && i == classStart + 1) c = '^';
 						re += c;
 						continue;
@@ -577,7 +589,7 @@ class Minimatch {
 					// if extglob is disabled, then +(asdf|foo) isn't a thing.
 					// just clear the statechar *now*, rather than even diving into
 					// the patternList stuff.
-					if (options.noext) clearStateChar();
+					if (options.noext == true) clearStateChar();
 					continue;
 
 				case '(':
@@ -595,7 +607,8 @@ class Minimatch {
 					patternListStack.push({
 						type: plType,
 						start: i - 1,
-						reStart: re.length
+						reStart: re.length,
+						reEnd: -1,
 					});
 					// negation is (?:(?!js)[^/]*)
 					re += stateChar == '!' ? '(?:(?!(?:' : '(?:';
@@ -701,10 +714,12 @@ class Minimatch {
 					// swallow any state char that wasn't consumed
 					clearStateChar();
 
+					debug('$escaping ${reSpecials[c]} $c $inClass');
+
 					if (escaping) {
 						// no need
 						escaping = false;
-					} else if (reSpecials[c]
+					} else if (reSpecials.exists(c)
 						&& !(c == '^' && inClass)) {
 						re += '\\';
 					}
@@ -737,8 +752,7 @@ class Minimatch {
 		// Go through and escape them, taking care not to double-escape any
 		// | chars that were already escaped.
 		var pl;
-		do {
-			pl = patternListStack.pop();
+		while ((pl = patternListStack.pop()) != null) {
 			var tail = re.substring(pl.reStart + 3);
 			// maybe some even number of \, then maybe 1 \, followed by a |
 			tail = ~/((?:\\{2})*)(\\?)\|/g.map(tail, function (re:EReg):String {
@@ -758,14 +772,14 @@ class Minimatch {
 				return _1 + _1 + _2 + '|';
 			});
 
-			this.debug('tail=$tail');
+			debug('tail=$tail');
 			var t = pl.type == '*' ? star
 				: pl.type == '?' ? qmark
 				: '\\' + pl.type;
 
 			hasMagic = true;
 			re = re.substring(0, pl.reStart) + t + '\\(' + tail;
-		} while (pl != null);
+		}
 
 		// handle trailing things that only matter at the very end.
 		clearStateChar();
@@ -827,7 +841,7 @@ class Minimatch {
 			return Str(globUnescape(pattern));
 		}
 
-		var flags = options.nocase ? 'i' : '';
+		var flags = options.nocase == true ? 'i' : '';
 		var regExp = new EReg('^' + re + '$', flags);
 
 		// regExp._glob = pattern;
@@ -851,7 +865,7 @@ class MinimatchFunctions {
 		if (options == null) options = {}
 
 		// shortcut: comments match nothing.
-		if (!options.nocomment && pattern.charAt(0) == '#') {
+		if (!options.nocomment == true && pattern.charAt(0) == '#') {
 			return false;
 		}
 
@@ -876,7 +890,7 @@ class MinimatchFunctions {
 		list = list.filter(function (f) {
 			return mm.match(f);
 		});
-		if (mm.options.nonull && list.length == 0) {
+		if (mm.options.nonull == true && list.length == 0) {
 			list.push(pattern);
 		}
 		return list;
