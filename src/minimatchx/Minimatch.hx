@@ -146,7 +146,7 @@ class Minimatch {
 		debug('${this.pattern} set $set');
 
 		// Find the basename of the path by looking for the last non-empty segment
-		var filename;
+		var filename = null;
 		var i = f.length - 1;
 		while (i >= 0) {
 			filename = f[i];
@@ -195,10 +195,12 @@ class Minimatch {
 			debug('$pattern, $p, $f');
 
 			switch (p) {
+				#if (haxe_ver >= 3.2)
 				case null:
 					// should be impossible.
 					// some invalid regexp stuff in the set.
 					return false;
+				#end
 				case GLOBSTAR:
 					// "**"
 					// a/**/b/**/c would match the following:
@@ -509,7 +511,7 @@ class Minimatch {
 		}> = [];
 		var negativeLists:Array<Dynamic> = [];
 		var plType;
-		var stateChar:Null<String>;
+		var stateChar:Null<String> = null;
 		var inClass = false;
 		var reClassStart = -1;
 		var classStart = -1;
