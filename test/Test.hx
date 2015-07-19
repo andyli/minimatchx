@@ -1,6 +1,5 @@
 import haxe.unit.*;
 
-import minimatchx.BraceExpansion;
 import minimatchx.Minimatch;
 
 class Test extends TestCase {

@@ -1,7 +1,5 @@
 package minimatchx;
 
-using Reflect;
-
 @:allow(minimatchx.BalancedMatch)
 class BalancedMatchResult {
 	/**
