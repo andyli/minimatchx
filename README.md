@@ -1,5 +1,7 @@
 # minimatchx
 
+[![Build Status](https://travis-ci.org/andyli/minimatchx.svg?branch=master)](https://travis-ci.org/andyli/minimatchx)
+
 Haxe port of [minimatch](https://github.com/isaacs/minimatch) 2.0.9, a minimal matching utility.
 
 It works by converting glob expressions into `EReg` objects.

@@ -1,0 +1,12 @@
+language: haxe
+
+haxe:
+  - development
+  - "3.2.0"
+  - "3.1.3"
+
+install:
+  - haxelib install hxcpp
+
+script:
+  - haxe build.hxml
