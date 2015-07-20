@@ -1,6 +1,8 @@
 package minimatchx;
 
+import haxe.*;
 import minimatchx.BalancedMatch.balanced;
+import minimatchx.Int64Helper;
 using Lambda;
 
 /**
@@ -13,10 +15,6 @@ class BraceExpansion {
 	static var escClose = "%%CLOSE" + Math.random() + "%%";
 	static var escComma = "%%COMMA" + Math.random() + "%%";
 	static var escPeriod = "%%PERIOD" + Math.random() + "%%";
-
-	static function numeric(str:String):Float {
-		return ~/\d/.match(str) ? Std.parseFloat(str) : str.charCodeAt(0);
-	}
 
 	static function escapeBraces(str) {
 		return str.split('\\\\').join(escSlash)
@@ -133,44 +131,119 @@ class BraceExpansion {
 		var N;
 
 		if (isSequence) {
-			var x = numeric(n[0]);
-			var y = numeric(n[1]);
-			var width:Int = Std.int(Math.max(n[0].length, n[1].length));
-			var incr:Int = n.length == 3
-				? Std.int(Math.abs(numeric(n[2])))
-				: 1;
-			var test = lte;
-			var reverse = y < x;
-			if (reverse) {
-				incr *= -1;
-				test = gte;
-			}
-			var pad = n.exists(isPadded);
+			if (
+				isAlphaSequence ||
+				(Int64Helper.parsableAsInt32(n[0]) && Int64Helper.parsableAsInt32(n[1]))
+			) {
+				var x = if (isAlphaSequence)
+					n[0].charCodeAt(0);
+				else
+					Std.parseInt(n[0]);
 
-			N = [];
+				var y = if (isAlphaSequence)
+					n[1].charCodeAt(0);
+				else
+					Std.parseInt(n[1]);
 
-			var i = x;
-			while (test(i, y)) {
-				var c;
-				if (isAlphaSequence) {
-					c = String.fromCharCode(Std.int(i));
-					if (c == '\\')
-						c = '';
-				} else {
-					c = Std.string(i);
+				var width:Int = Std.int(Math.max(n[0].length, n[1].length));
+				var incr:Int = n.length >= 3
+					? Std.int(Math.abs(Std.parseInt(n[2])))
+					: 1;
+				var test = function(a:Int, b:Int) return a <= b;
+				var reverse = y < x;
+				if (reverse) {
+					incr = -incr;
+					test = function(a:Int, b:Int) return a >= b;
+				}
+				var pad = n.exists(isPadded);
+
+				N = [];
+
+				var i = x;
+				while (test(i, y)) {
+					var c;
+					if (isAlphaSequence) {
+						c = String.fromCharCode(Std.int(i));
+						if (c == '\\')
+							c = '';
+					} else {
+						c = Std.string(i);
+						if (pad) {
+							var need = width - c.length;
+							if (need > 0) {
+								var z = [for (i in 0...need) "0"].join('');
+								if (i < 0)
+									c = '-' + z + c.substring(1);
+								else
+									c = z + c;
+							}
+						}
+					}
+					N.push(c);
+					i += incr;
+				}
+			} else {
+				//overflow int32 numeric sequence
+
+				var x = Int64Helper.fromString(n[0]);
+				var y = Int64Helper.fromString(n[1]);
+
+				var width:Int = Std.int(Math.max(n[0].length, n[1].length));
+				var incr:Int = n.length >= 3
+					? Std.int(Math.abs(Std.parseInt(n[2])))
+					: 1;
+				#if (haxe_ver < 3.2)
+				var incr = Int64.ofInt(incr);
+				#end
+				var test = function(a:Int64, b:Int64)
+					#if (haxe_ver >= 3.2)
+						return a <= b;
+					#else
+						return Int64.compare(a, b) <= 0;
+					#end
+				var reverse =
+					#if (haxe_ver >= 3.2)
+						y < x;
+					#else
+						Int64.compare(y, x) < 0;
+					#end
+				if (reverse) {
+					#if (haxe_ver >= 3.2)
+					incr = -incr;
+					#else
+					incr = Int64.neg(incr);
+					#end
+					test = function(a:Int64, b:Int64)
+						#if (haxe_ver >= 3.2)
+							return a >= b;
+						#else
+							return Int64.compare(a, b) >= 0;
+						#end
+				}
+				var pad = n.exists(isPadded);
+
+				N = [];
+
+				var i = x;
+				while (test(i, y)) {
+					var c = Std.string(i);
 					if (pad) {
 						var need = width - c.length;
 						if (need > 0) {
 							var z = [for (i in 0...need) "0"].join('');
-							if (i < 0)
+							if (Int64.isNeg(i))
 								c = '-' + z + c.substring(1);
 							else
 								c = z + c;
 						}
 					}
+					N.push(c);
+					#if (haxe_ver >= 3.2)
+						i += incr;
+					#else
+						i = Int64.add(i, incr);
+					#end
 				}
-				N.push(c);
-				i += incr;
 			}
 		} else {
 			N = n
