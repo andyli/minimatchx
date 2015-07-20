@@ -70,14 +70,14 @@ class Patterns {
 				item('[^a-c]*', ['d', 'dd', 'de'], null, files.concat(['a-b', 'aXb', '.x', '.y'])),
 				item('a\\*b/*', ['a*b/ooo'], null, files.concat(['a-b', 'aXb', '.x', '.y', 'a*b/', 'a*b/ooo'])),
 				item('a\\*?/*', ['a*b/ooo'], null, files.concat(['a-b', 'aXb', '.x', '.y', 'a*b/', 'a*b/ooo'])),
-				item('*\\\\!*', [], {"null": true}, ['echo !7']),
+				item('*\\\\!*', [], null, ['echo !7']),
 				item('*\\!*', ['echo !7'], null, ['echo !7']),
 				item('*.\\*', ['r.*'], null, ['r.*']),
 				item('a[b]c', ['abc'], null, files.concat(['a-b', 'aXb', '.x', '.y', 'a*b/', 'a*b/ooo'])),
 				item('a[\\b]c', ['abc'], null, files.concat(['a-b', 'aXb', '.x', '.y', 'a*b/', 'a*b/ooo'])),
 				item('a?c', ['abc'], null, files.concat(['a-b', 'aXb', '.x', '.y', 'a*b/', 'a*b/ooo'])),
-				item('a\\*c', [], {"null": true}, ['abc']),
-				item('', [''], { "null": true }, ['']),
+				item('a\\*c', [], null, ['abc']),
+				item('', [''], null, ['']),
 			]
 		},
 		{
