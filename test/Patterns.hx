@@ -20,6 +20,7 @@ class Patterns {
 
 	static public var patterns:Array<{
 		info:String,
+		?files:Array<String>,
 		items:Array<{
 			pattern:String,
 			expect:Array<String>,
@@ -52,6 +53,70 @@ class Patterns {
 				item('s/\\..*//', ['s/\\..*//'], {nonull: true}),
 			]
 		},
+		{
+			info: 'legendary larry crashes bashes',
+			items: [
+				item("/^root:/{s/^[^:]*:[^:]*:([^:]*).*$/\\1/", ["/^root:/{s/^[^:]*:[^:]*:([^:]*).*$/\\1/"], {nonull: true}),
+				item("/^root:/{s/^[^:]*:[^:]*:([^:]*).*$/\u0001/", ["/^root:/{s/^[^:]*:[^:]*:([^:]*).*$/\u0001/"], {nonull: true}),
+			]
+		},
+		{
+			info: 'character classes',
+			items: [
+				item('[a-c]b*', ['abc', 'abd', 'abe', 'bb', 'cb']),
+				item('[a-y]*[^c]', ['abd', 'abe', 'bb', 'bcd', 'bdir/', 'ca', 'cb', 'dd', 'de']),
+				item('a*[^c]', ['abd', 'abe']),
+				item('a[X-]b', ['a-b', 'aXb'], null, files.concat(['a-b', 'aXb'])),
+				item('[^a-c]*', ['d', 'dd', 'de'], null, files.concat(['a-b', 'aXb', '.x', '.y'])),
+				item('a\\*b/*', ['a*b/ooo'], null, files.concat(['a-b', 'aXb', '.x', '.y', 'a*b/', 'a*b/ooo'])),
+				item('a\\*?/*', ['a*b/ooo'], null, files.concat(['a-b', 'aXb', '.x', '.y', 'a*b/', 'a*b/ooo'])),
+				item('*\\\\!*', [], {"null": true}, ['echo !7']),
+				item('*\\!*', ['echo !7'], null, ['echo !7']),
+				item('*.\\*', ['r.*'], null, ['r.*']),
+				item('a[b]c', ['abc'], null, files.concat(['a-b', 'aXb', '.x', '.y', 'a*b/', 'a*b/ooo'])),
+				item('a[\\b]c', ['abc'], null, files.concat(['a-b', 'aXb', '.x', '.y', 'a*b/', 'a*b/ooo'])),
+				item('a?c', ['abc'], null, files.concat(['a-b', 'aXb', '.x', '.y', 'a*b/', 'a*b/ooo'])),
+				item('a\\*c', [], {"null": true}, ['abc']),
+				item('', [''], { "null": true }, ['']),
+			]
+		},
+		{
+			info: 'http://www.opensource.apple.com/source/bash/bash-23/bash/tests/glob-test',
+			files: files.concat(['man/', 'man/man1/', 'man/man1/bash.1']),
+			items: [
+				item('*/man*/bash.*', ['man/man1/bash.1']),
+				item('man/man1/bash.1', ['man/man1/bash.1']),
+				item('a***c', ['abc'], null, ['abc']),
+				item('a*****?c', ['abc'], null, ['abc']),
+				item('?*****??', ['abc'], null, ['abc']),
+				item('*****??', ['abc'], null, ['abc']),
+				item('?*****?c', ['abc'], null, ['abc']),
+				item('?***?****c', ['abc'], null, ['abc']),
+				item('?***?****?', ['abc'], null, ['abc']),
+				item('?***?****', ['abc'], null, ['abc']),
+				item('*******c', ['abc'], null, ['abc']),
+				item('*******?', ['abc'], null, ['abc']),
+				item('a*cd**?**??k', ['abcdecdhjk'], null, ['abcdecdhjk']),
+				item('a**?**cd**?**??k', ['abcdecdhjk'], null, ['abcdecdhjk']),
+				item('a**?**cd**?**??k***', ['abcdecdhjk'], null, ['abcdecdhjk']),
+				item('a**?**cd**?**??***k', ['abcdecdhjk'], null, ['abcdecdhjk']),
+				item('a**?**cd**?**??***k**', ['abcdecdhjk'], null, ['abcdecdhjk']),
+				item('a****c**?**??*****', ['abcdecdhjk'], null, ['abcdecdhjk']),
+				item('[-abc]', ['-'], null, ['-']),
+				item('[abc-]', ['-'], null, ['-']),
+				item('\\', ['\\'], null, ['\\']),
+				item('[\\\\]', ['\\'], null, ['\\']),
+				item('[[]', ['['], null, ['[']),
+				item('[', ['['], null, ['[']),
+				item('[*', ['[abc'], null, ['[abc']),
+			]
+		},
+		// {
+		// 	info: ,
+		// 	items: [
+		// 		
+		// 	]
+		// },
 		// {
 		// 	info: ,
 		// 	items: [

@@ -9,16 +9,21 @@ class TestMinimatch extends TestCase {
 	function test():Void {
 		for (p in patterns) {
 			for (c in p.items) {
-				var
-					pattern = c.pattern,
-					expect = {
-						var e = c.expect.copy();
-						e.sort(Reflect.compare);
-						e;
-					},
-					options = c.options != null ? c.options : {},
-					f = c.files != null ? c.files : files,
-					assertOpts = c.assertOpts != null ? c.assertOpts : {};
+				var pattern = c.pattern;
+				var expect = {
+					var e = c.expect.copy();
+					e.sort(Reflect.compare);
+					e;
+				};
+				var options = c.options != null ? c.options : {};
+				var f = if (c.files != null)
+					c.files;
+				else if (p.files != null)
+					p.files;
+				else
+					files;
+
+				var assertOpts = c.assertOpts != null ? c.assertOpts : {};
 
 				// trace('$f $pattern $options');
 				#if debug

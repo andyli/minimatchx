@@ -694,6 +694,7 @@ class Minimatch {
 						try {
 							new EReg('[' + cs + ']', "");
 						} catch (er:Dynamic) {
+							debug("not a valid class!");
 							// not a valid class!
 							switch(this.parse(cs, true)) {
 								case Sub(str, isMagic):
@@ -739,11 +740,14 @@ class Minimatch {
 			// the contents of the would-be class to re-translate
 			// any characters that were passed through as-is
 			var cs = pattern.substr(classStart + 1);
+			// trace(cs);
 			switch (this.parse(cs, true)) {
-				case Sub(s, hasMagic):
+				case Sub(s, m):
 					re = re.substr(0, reClassStart) + '\\[' + s;
-					hasMagic = hasMagic || hasMagic;
-				case _: throw "error";
+					hasMagic = hasMagic || m;
+				case Str(s):
+					re = re.substr(0, reClassStart) + '\\[' + s;
+				case p: throw p;
 			}
 		}
 
