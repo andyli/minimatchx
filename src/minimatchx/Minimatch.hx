@@ -150,7 +150,7 @@ class Minimatch {
 		var i = f.length - 1;
 		while (i >= 0) {
 			filename = f[i];
-			if (filename != null) break;
+			if (filename != null && filename != "") break;
 			i--;
 		}
 

@@ -111,6 +111,140 @@ class Patterns {
 				item('[*', ['[abc'], null, ['[abc']),
 			]
 		},
+		{
+			info: "a right bracket shall lose its special meaning and represent itself in a bracket expression if it occurs first in the list.  -- POSIX.2 2.8.3.2",
+			items: [
+				item('[]]', [']'], null, [']']),
+				item('[]-]', [']'], null, [']']),
+				item('[a-z]', ['p'], null, ['p']),
+				item('??**********?****?', [], null, ['abc']),
+				item('??**********?****c', [], null, ['abc']),
+				item('?************c****?****', [], null, ['abc']),
+				item('*c*?**', [], null, ['abc']),
+				item('a*****c*?**', [], null, ['abc']),
+				item('a********???*******', [], null, ['abc']),
+				item('[]', [], null, ['a']),
+				item('[abc', [], null, ['[']),
+			]
+		},
+		{
+			info: 'nocase tests',
+			items: [
+				item(
+					'XYZ',
+					['xYz'],
+					{ nocase: true },
+					['xYz', 'ABC', 'IjK']
+				),
+				item(
+					'ab*',
+					['ABC'],
+					{ nocase: true },
+					['xYz', 'ABC', 'IjK']
+				),
+				item(
+					'[ia]?[ck]',
+					['ABC', 'IjK'],
+					{ nocase: true },
+					['xYz', 'ABC', 'IjK']
+				),
+			]
+		},
+		{
+			info: 'onestar/twostar',
+			items: [
+				item('{/*,*}', [], null, ['/asdf/asdf/asdf']),
+				item('{/?,*}', ['/a', 'bb'], null, ['/a', '/b/b', '/a/b/c', 'bb']),
+			]
+		},
+		{
+			info: 'dots should not match unless requested',
+			files: ['a/./b', 'a/../b', 'a/c/b', 'a/.d/b'],
+			items: [
+				item('**', ['a/b'], {}, ['a/b', 'a/.d', '.a/.d']),
+				// .. and . can only match patterns starting with .,
+				// even when options.dot is set.
+				item('a/*/b', ['a/c/b', 'a/.d/b'], {dot: true}),
+				item('a/.*/b', ['a/./b', 'a/../b', 'a/.d/b'], {dot: true}),
+				item('a/*/b', ['a/c/b'], {dot: false}),
+				item('a/.*/b', ['a/./b', 'a/../b', 'a/.d/b'], {dot: false}),
+
+				// this also tests that changing the options needs
+				// to change the cache key, even if the pattern is
+				// the same!
+				item(
+					'**',
+					['a/b', 'a/.d', '.a/.d'],
+					{ dot: true },
+					[ '.a/.d', 'a/.d', 'a/b']
+				),
+			]
+		},
+		{
+			info: 'paren sets cannot contain slashes',
+			items: [
+				item('*(a/b)', ['*(a/b)'], {nonull: true}, ['a/b']),
+
+				// brace sets trump all else.
+				//
+				// invalid glob pattern.  fails on bash4 and bsdglob.
+				// however, in this implementation, it's easier just
+				// to do the intuitive thing, and let brace-expansion
+				// actually come before parsing any extglob patterns,
+				// like the documentation seems to say.
+				//
+				// XXX: if anyone complains about this, either fix it
+				// or tell them to grow up and stop complaining.
+				//
+				// bash/bsdglob says this:
+				// , ["*(a|{b),c)}", ["*(a|{b),c)}"], {}, ["a", "ab", "ac", "ad"]]
+				// but we do this instead:
+				item('*(a|{b),c)}', ['a', 'ab', 'ac'], {}, ['a', 'ab', 'ac', 'ad']),
+
+				// test partial parsing in the presence of comment/negation chars
+				item('[!a*', ['[!ab'], {}, ['[!ab', '[ab']),
+				item('[#a*', ['[#ab'], {}, ['[#ab', '[ab']),
+
+				// like: {a,b|c\\,d\\\|e} except it's unclosed, so it has to be escaped.
+				item(
+					'+(a|*\\|c\\\\|d\\\\\\|e\\\\\\\\|f\\\\\\\\\\|g',
+					['+(a|b\\|c\\\\|d\\\\|e\\\\\\\\|f\\\\\\\\|g'],
+					{},
+					['+(a|b\\|c\\\\|d\\\\|e\\\\\\\\|f\\\\\\\\|g', 'a', 'b\\c']
+				),
+			]
+		},
+		{
+			info: 'crazy nested {,,} and *(||) tests.',
+			files: [
+				'a', 'b', 'c', 'd', 'ab', 'ac', 'ad', 'bc', 'cb', 'bc,d',
+				'c,db', 'c,d', 'd)', '(b|c', '*(b|c', 'b|c', 'b|cc', 'cb|c',
+				'x(a|b|c)', 'x(a|c)', '(a|b|c)', '(a|c)'
+			],
+			items: [
+				item('*(a|{b,c})', ['a', 'b', 'c', 'ab', 'ac']),
+				item('{a,*(b|c,d)}', ['a', '(b|c', '*(b|c', 'd)']),
+				// a
+				// *(b|c)
+				// *(b|d)
+				item('{a,*(b|{c,d})}', ['a', 'b', 'bc', 'cb', 'c', 'd']),
+				item('*(a|{b|c,c})', ['a', 'b', 'c', 'ab', 'ac', 'bc', 'cb']),
+
+				// test various flag settings.
+				item(
+					'*(a|{b|c,c})',
+					['x(a|b|c)', 'x(a|c)', '(a|b|c)', '(a|c)'],
+					{ noext: true }
+				),
+				item(
+					'a?b',
+					['x/y/acb', 'acb/'],
+					{ matchBase: true },
+					['x/y/acb', 'acb/', 'acb/d/e', 'x/y/acb/d']
+				),
+				item('#*', ['#a', '#b'], { nocomment: true }, ['#a', '#b', 'c#d']),
+			]
+		},
 		// {
 		// 	info: ,
 		// 	items: [
