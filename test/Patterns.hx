@@ -245,18 +245,64 @@ class Patterns {
 				item('#*', ['#a', '#b'], { nocomment: true }, ['#a', '#b', 'c#d']),
 			]
 		},
-		// {
-		// 	info: ,
-		// 	items: [
-		// 		
-		// 	]
-		// },
-		// {
-		// 	info: ,
-		// 	items: [
-		// 		
-		// 	]
-		// },
+		// begin channelling Boole and deMorgan...
+		{
+			info: 'negation tests',
+			files: ['d', 'e', '!ab', '!abc', 'a!b', '\\!a'],
+			items: [
+				// anything that is NOT a* matches.
+				item('!a*', ['\\!a', 'd', 'e', '!ab', '!abc']),
+
+				// anything that IS !a* matches.
+				item('!a*', ['!ab', '!abc'], {nonegate: true}),
+
+				// anything that IS a* matches
+				item('!!a*', ['a!b']),
+
+				// anything that is NOT !a* matches
+				item('!\\!a*', ['a!b', 'd', 'e', '\\!a']),
+			]
+		},
+		{
+			info: 'negation nestled within a pattern',
+			files: [
+				'foo.js',
+				'foo.bar',
+				'foo.js.js',
+				'blar.js',
+				'foo.',
+				'boo.js.boo'
+			],
+			items: [
+				// last one is tricky! * matches foo, . matches ., and 'js.js' != 'js'
+				// copy bash 4.3 behavior on this.
+				item('*.!(js)', ['foo.bar', 'foo.', 'boo.js.boo', 'foo.js.js']),
+			]
+		},
+		{
+			info: 'https://github.com/isaacs/minimatch/issues/5',
+			files: [
+				'a/b/.x/c', 'a/b/.x/c/d', 'a/b/.x/c/d/e', 'a/b/.x', 'a/b/.x/',
+				'a/.x/b', '.x', '.x/', '.x/a', '.x/a/b', 'a/.x/b/.x/c', '.x/.x'
+			],
+			items: [
+				item(
+					'**/.x/**',
+					[
+						'.x/', '.x/a', '.x/a/b', 'a/.x/b', 'a/b/.x/', 'a/b/.x/c',
+						'a/b/.x/c/d', 'a/b/.x/c/d/e'
+					]
+				)
+			]
+		},
+		{
+			info: 'https://github.com/isaacs/minimatch/issues/59',
+			items: [
+				item('[z-a]', []),
+				item('a/[2015-03-10T00:23:08.647Z]/z', []),
+				item('[a-0][a-\u0100]', [])
+			]
+		},
 	];
 
 	static public var regexps = [
