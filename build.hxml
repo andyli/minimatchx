@@ -5,6 +5,10 @@ build-each.hxml
 --interp
 
 --next
+-neko bin/Test.n
+-cmd neko bin/Test.n
+
+--next
 -js bin/Test.js
 -cmd node bin/Test.js
 

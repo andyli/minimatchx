@@ -151,7 +151,7 @@ class TestBraceExpansion extends TestCase {
 		cases.pop();
 
 		for (testcase in cases) {
-			var set = testcase.split('\n');
+			var set = ~/\r\n|\r|\n/g.split(testcase);
 			var pattern = set.shift();
 			var actual = expand(pattern);
 
