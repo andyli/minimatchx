@@ -73,14 +73,6 @@ class BraceExpansion {
 	static function isPadded(el:String):Bool
 		return ~/^-?0\d/.match(el);
 
-	static function lte(i:Float, y:Float):Bool
-		return i <= y;
-
-	static function gte(i:Float, y:Float):Bool
-		return i >= y;
-
-
-
 	static function _expand(str:String, isTop:Bool = false):Array<String> {
 		var expansions = [];
 

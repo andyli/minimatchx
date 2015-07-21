@@ -1,18 +1,19 @@
 -main Test
 -cp src
 -cp test
+
+--each
+
 --interp
 
 --next
--main Test
--cp src
--cp test
 -js bin/Test.js
 -cmd node bin/Test.js
 
 --next
--main Test
--cp src
--cp test
+-java bin
+-cmd java -jar bin/Test.jar
+
+--next
 -cpp bin
 -cmd ./bin/Test

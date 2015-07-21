@@ -691,10 +691,66 @@ class Minimatch {
 						// without a try/catch and a new RegExp, but it's tricky
 						// to do safely.  For now, this is safe and works.
 						var cs = pattern.substring(classStart + 1, i);
+						debug(cs);
+						#if java
+						//http://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+						function shouldEscape(charCode:Int):Bool {
+							return switch (charCode) {
+								case
+									"\\".code,
+									"^".code,
+									"$".code,
+									"*".code,
+									"+".code,
+									"?".code,
+									".".code,
+									"(".code,
+									")".code,
+									"|".code,
+									"{".code,
+									"}".code,
+									"[".code,
+									"]".code:
+									true;
+								case _:
+									false;
+							}
+						}
+						function normalize(s:String):String {
+							var a = new StringBuf();
+							var i = 0;
+							while (i < s.length) {
+								var c = s.charCodeAt(i);
+								switch (c) {
+									case '\\'.code:
+										var next = s.charCodeAt(i+1);
+										switch (next) {
+											case null:
+												a.addChar('\\'.code);
+											case shouldEscape(_) => true:
+												a.addChar('\\'.code);
+												a.addChar(next);
+												++i;
+											case _:
+												// not escape is needed
+										}
+									case shouldEscape(_) => true:
+										a.addChar('\\'.code);
+										a.addChar(c);
+									case c:
+										a.addChar(c);
+								}
+								++i;
+							}
+							return a.toString();
+						}
+						cs = normalize(cs);
+						debug(cs);
+						#end
 						try {
 							new EReg('[' + cs + ']', "");
 						} catch (er:Dynamic) {
-							debug("not a valid class!");
+							debug("not a valid class! " + cs);
 							// not a valid class!
 							switch(this.parse(cs, true)) {
 								case Sub(str, isMagic):
