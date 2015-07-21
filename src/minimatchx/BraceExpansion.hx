@@ -16,7 +16,7 @@ class BraceExpansion {
 	static var escComma = "%%COMMA" + Math.random() + "%%";
 	static var escPeriod = "%%PERIOD" + Math.random() + "%%";
 
-	static function escapeBraces(str) {
+	static function escapeBraces(str:String):String {
 		return str.split('\\\\').join(escSlash)
 			.split('\\{').join(escOpen)
 			.split('\\}').join(escClose)
@@ -24,7 +24,7 @@ class BraceExpansion {
 			.split('\\.').join(escPeriod);
 	}
 
-	static function unescapeBraces(str) {
+	static function unescapeBraces(str:String):String {
 		return str.split(escSlash).join('\\')
 			.split(escOpen).join('{')
 			.split(escClose).join('}')

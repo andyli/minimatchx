@@ -1,0 +1,3 @@
+build-each.hxml
+-python bin/Test.py
+-cmd python3 bin/Test.py

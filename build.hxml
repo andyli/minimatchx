@@ -1,6 +1,4 @@
--main Test
--cp src
--cp test
+build-each.hxml
 
 --each
 
@@ -25,3 +23,8 @@
 --next
 -cpp bin
 -cmd ./bin/Test
+
+# https://bugbase.adobe.com/index.cfm?event=bug&id=4023443
+# --next
+# -swf bin/Test.swf
+# -cmd open bin/Test.swf
