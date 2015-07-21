@@ -748,7 +748,10 @@ class Minimatch {
 						debug(cs);
 						#end
 						try {
-							new EReg('[' + cs + ']', "");
+							var r = new EReg('[' + cs + ']', "");
+							#if php
+							r.match("");
+							#end
 						} catch (er:Dynamic) {
 							debug("not a valid class! " + cs);
 							// not a valid class!
@@ -913,7 +916,13 @@ class Minimatch {
 	}
 
 	static function globUnescape(s:String):String {
+		#if php
+		return ~/\\(.)/g.map(s, function(r:EReg):String{
+			return r.matched(1);
+		});
+		#else
 		return ~/\\(.)/g.replace(s, "$1");
+		#end
 	}
 
 	static function regExpEscape (s) {

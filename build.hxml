@@ -15,5 +15,13 @@
 -cmd java -jar bin/Test.jar
 
 --next
+-cs bin
+-cmd mono bin/bin/Test.exe
+
+--next
+-php bin
+-cmd php bin/index.php
+
+--next
 -cpp bin
 -cmd ./bin/Test
